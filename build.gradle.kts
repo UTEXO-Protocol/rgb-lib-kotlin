@@ -20,7 +20,7 @@ jreleaser {
         name.set("rgb-lib-kotlin")
         description.set("RGB Lib Kotlin language bindings")
         longDescription.set("RGB Lib Kotlin language bindings for Android development")
-        website.set("https://github.com/RGB-Tools/rgb-lib-kotlin")
+        website.set("https://github.com/UTEXO-Protocol/rgb-lib-kotlin")
         authors.set(listOf("Zoe Faltibà", "Nicola Busanello"))
         license.set("MIT")
         licenseUrl.set("https://spdx.org/licenses/MIT.html")

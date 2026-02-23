@@ -61,7 +61,7 @@ afterEvaluate {
                 pom {
                     name.set("rgb-lib-android")
                     description.set("RGB Lib Kotlin language bindings.")
-                    url.set("https://github.com/RGB-Tools/rgb-lib-kotlin")
+                    url.set("https://github.com/UTEXO-Protocol/rgb-lib-kotlin")
                     inceptionYear.set("2022")
                     licenses {
                         license {
@@ -82,9 +82,9 @@ afterEvaluate {
                         }
                     }
                     scm {
-                        connection.set("scm:git:https://github.com/RGB-Tools/rgb-lib-kotlin.git")
+                        connection.set("scm:git:https://github.com/UTEXO-Protocol/rgb-lib-kotlin.git")
                         developerConnection.set("scm:git:ssh://github.com/RGB-Tools/rgb-lib-kotlin.git")
-                        url.set("https://github.com/RGB-Tools/rgb-lib-kotlin")
+                        url.set("https://github.com/UTEXO-Protocol/rgb-lib-kotlin")
                     }
                 }
             }
