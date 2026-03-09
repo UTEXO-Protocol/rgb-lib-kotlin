@@ -70,6 +70,11 @@ jobs:
           ANDROID_NDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}/ndk/25.2.9519653
         run: ./gradlew :android:buildAndroidLib
 
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_SECRET_KEY }}" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format short
+
       - name: Stage for Maven Central
         env:
           ANDROID_NDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}/ndk/25.2.9519653
