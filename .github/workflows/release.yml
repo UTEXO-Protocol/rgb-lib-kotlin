@@ -70,6 +70,19 @@ jobs:
           ANDROID_NDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}/ndk/25.2.9519653
         run: ./gradlew :android:buildAndroidLib
 
+      - name: Stage for Maven Central
+        env:
+          ANDROID_NDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}/ndk/25.2.9519653
+        run: ./gradlew :android:publish
+
+      - name: Publish to Maven Central
+        env:
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.MAVENCENTRAL_USERNAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.MAVENCENTRAL_PASSWORD }}
+          JRELEASER_GPG_KEY_NAME: ${{ secrets.GPG_KEY_NAME }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./gradlew jreleaserDeploy
+
       - name: Upload AAR artifact
         uses: actions/upload-artifact@v4
         with:
@@ -87,10 +100,10 @@ jobs:
             
             Kotlin/Android bindings for rgb-lib.
             
-            ### Installation
+            ### Installation (Maven Central)
             ```groovy
             dependencies {
-                implementation 'org.rgbtools:rgb-lib-android:${{ steps.version.outputs.version }}'
+                implementation 'com.utexo:rgb-lib-android:${{ steps.version.outputs.version }}'
             }
             ```
             

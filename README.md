@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.rgbtools:rgb-lib-android:<version>'
+    implementation 'com.utexo:rgb-lib-android:<version>'
 }
 ```
 
@@ -23,7 +23,7 @@ dependencies {
 Clone the project, including submodules:
 
 ```bash
-git clone git@github.com:rgb-tools-devs/rgb-lib-kotlin.git --recurse-submodules
+git clone git@github.com:UTEXO-Protocol/rgb-lib-kotlin.git --recurse-submodules
 ```
 
 When fetching updates, remember to update the submodule as well:
@@ -112,7 +112,7 @@ Publish the library to your local Maven repository:
 Create a `~/.jreleaser/config.yml` file with the publishing and signing information:
 
 ```yaml
-JRELEASER_GITHUB_OWNER: RGB-Tools
+JRELEASER_GITHUB_OWNER: UTEXO-Protocol
 JRELEASER_GITHUB_NAME: rgb-lib-kotlin
 JRELEASER_GITHUB_TOKEN: fake-token-not-used
 

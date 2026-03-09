@@ -4,11 +4,11 @@ plugins {
     id("maven-publish")
 
     // Custom plugin to generate the native libs and bindings file
-    id("org.rgbtools.plugins.generate-android-bindings")
+    id("com.utexo.plugins.generate-android-bindings")
 }
 
 android {
-    namespace = "org.rgbtools"
+    namespace = "com.utexo"
 
     compileSdk = 36
 
@@ -53,7 +53,7 @@ afterEvaluate {
     publishing {
         publications {
             create<MavenPublication>("maven") {
-                groupId = "org.rgbtools"
+                groupId = "com.utexo"
                 artifactId = "rgb-lib-android"
                 version = "0.3.0-beta.4"
                 from(components["release"])

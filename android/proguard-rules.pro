@@ -23,6 +23,6 @@
 # for JNA
 -dontwarn java.awt.*
 -keep class com.sun.jna.* { *; }
--keep class org.rgbtools.* { *; }
--keepclassmembers class * extends org.rgbtools.* { public *; }
+-keep class com.utexo.* { *; }
+-keepclassmembers class * extends com.utexo.* { public *; }
 -keepclassmembers class * extends com.sun.jna.* { public *; }

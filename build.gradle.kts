@@ -5,7 +5,7 @@ plugins {
     id("org.jreleaser") version "1.19.0"
 }
 
-group = "org.rgbtools"
+group = "com.utexo"
 version = "0.3.0-beta.4"
 
 allprojects {
@@ -27,7 +27,7 @@ jreleaser {
         copyright.set("2022-2025")
 
         java {
-            groupId.set("org.rgbtools")
+            groupId.set("com.utexo")
             version.set("11")
         }
     }
