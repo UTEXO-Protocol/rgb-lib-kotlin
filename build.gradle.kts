@@ -5,7 +5,7 @@ plugins {
     id("org.jreleaser") version "1.19.0"
 }
 
-group = "org.rgbtools"
+group = "com.utexo"
 version = "0.3.0-beta.4"
 
 allprojects {
@@ -20,14 +20,14 @@ jreleaser {
         name.set("rgb-lib-kotlin")
         description.set("RGB Lib Kotlin language bindings")
         longDescription.set("RGB Lib Kotlin language bindings for Android development")
-        website.set("https://github.com/RGB-Tools/rgb-lib-kotlin")
+        website.set("https://github.com/UTEXO-Protocol/rgb-lib-kotlin")
         authors.set(listOf("Zoe Faltibà", "Nicola Busanello"))
         license.set("MIT")
         licenseUrl.set("https://spdx.org/licenses/MIT.html")
         copyright.set("2022-2025")
 
         java {
-            groupId.set("org.rgbtools")
+            groupId.set("com.utexo")
             version.set("11")
         }
     }

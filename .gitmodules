@@ -1,3 +1,4 @@
 [submodule "rgb-lib"]
 	path = rgb-lib
-	url = https://github.com/RGB-Tools/rgb-lib
+	url = https://github.com/UTEXO-Protocol/rgb-lib
+	branch = utexo-master

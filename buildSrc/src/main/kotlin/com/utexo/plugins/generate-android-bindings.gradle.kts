@@ -1,4 +1,4 @@
-package org.rgbtools.plugins
+package com.utexo.plugins
 
 import org.gradle.kotlin.dsl.register
 
@@ -128,7 +128,7 @@ val generateAndroidBindings by tasks.register<Exec>("generateAndroidBindings") {
 // create an aggregate task which will run the required tasks to build the Android libs in order
 // the task will also appear in the printout of the ./gradlew tasks task with group and description
 tasks.register("buildAndroidLib") {
-    group = "RgbTools"
+    group = "Utexo"
     description = "Aggregate task to build Android library"
 
     dependsOn(

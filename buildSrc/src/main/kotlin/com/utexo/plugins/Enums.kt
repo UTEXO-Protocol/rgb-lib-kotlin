@@ -1,4 +1,4 @@
-package org.rgbtools.plugins
+package com.utexo.plugins
 
 
 val operatingSystem: OS = when {
