@@ -118,7 +118,8 @@ val generateAndroidBindings by tasks.register<Exec>("generateAndroidBindings") {
     workingDir(rgbLibUniffiPath)
     executable("cargo")
     args("run", "--bin", "rgb-lib-uniffi-bindgen", "generate", "src/rgb-lib.udl",
-        "--language", "kotlin", "--out-dir", "$androidPath/src/main/kotlin")
+        "--language", "kotlin", "--out-dir", "$androidPath/src/main/kotlin",
+        "--config", "uniffi.toml")
 
     doLast {
         println("Android bindings file successfully created")
