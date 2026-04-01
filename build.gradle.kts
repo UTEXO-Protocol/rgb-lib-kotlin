@@ -34,7 +34,7 @@ jreleaser {
         authors.set(listOf("Zoe Faltibà", "Nicola Busanello"))
         license.set("MIT")
         licenseUrl.set("https://spdx.org/licenses/MIT.html")
-        copyright.set("2022-2025")
+        copyright.set("2022-2026")
 
         java {
             groupId.set("org.rgbtools")
