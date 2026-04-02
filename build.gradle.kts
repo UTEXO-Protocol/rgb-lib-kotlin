@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "org.rgbtools"
-version = "0.3.0-beta.4"
+version = "0.3.0-beta.5"
 
 allprojects {
     repositories {
