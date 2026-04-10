@@ -34,11 +34,11 @@ jobs:
             echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Update submodule to utexo-master
+      - name: Update submodule to rgb-lib dev
         run: |
           cd rgb-lib
-          git fetch origin utexo-master
-          git checkout origin/utexo-master
+          git fetch origin dev
+          git checkout origin/dev
           cd ..
 
       - name: Set up JDK 17
