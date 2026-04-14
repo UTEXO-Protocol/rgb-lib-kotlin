@@ -88,16 +88,19 @@ The last column of each LOAD row is the alignment:
 
 ### Publish
 
-Download [OpenJDK 18] and unpack it to a directory of your choice (e.g.
-`$HOME/jdk`).
+Make sure you have OpenJDK 21 available. Running `java --version` should return
+`openjdk 21.0.10` or a newer 21.x version. If this is not the case, you can
+download [OpenJDK 21], unpack it to a directory of your choice (e.g.
+`$HOME/jdk`) and then set the following environment variables accordingly:
 
-Setup the following environment variables:
+- `JAVA_HOME` (e.g. `export JAVA_HOME=$HOME/jdk/jdk-21.0.2`)
+- `PATH` (`export PATH=$JAVA_HOME/bin:$PATH`)
+
+Setup the following android environment variables:
 
 - `ANDROID_SDK_ROOT` (e.g. `export ANDROID_SDK_ROOT="$HOME/Android/Sdk"`)
 - `ANDROID_HOME` (`export ANDROID_HOME="$ANDROID_SDK_ROOT"`)
 - `ANDROID_NDK_ROOT` (`export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/25.2.<NDK_VERSION>`)
-- `JAVA_HOME` (e.g. `export JAVA_HOME=$HOME/jdk/jdk-18.0.2`)
-- `PATH` (`export PATH=$JAVA_HOME/bin:$PATH`)
 
 #### To local Maven repository
 
@@ -147,4 +150,4 @@ Publish by running:
 
 [rgb-lib]: https://github.com/RGB-Tools/rgb-lib
 [rgb-lib-uniffi]: https://github.com/RGB-Tools/rgb-lib/tree/master/bindings/uniffi
-[OpenJDK 18]: (https://jdk.java.net/archive/)
+[OpenJDK 21]: (https://jdk.java.net/archive/)

@@ -1,10 +1,19 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     id("maven-publish")
 
     // Custom plugin to generate the native libs and bindings file
     id("com.utexo.plugins.generate-android-bindings")
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
+tasks.withType<Exec>().configureEach {
+    environment("AWS_LC_SYS_CMAKE_BUILDER", "0")
 }
 
 android {
@@ -35,15 +44,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 dependencies {
     implementation("net.java.dev.jna:jna:5.17.0@aar")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.core:core-ktx:1.16.0")
     api("org.slf4j:slf4j-api:2.0.17")
@@ -55,7 +59,7 @@ afterEvaluate {
             create<MavenPublication>("maven") {
                 groupId = "com.utexo"
                 artifactId = "rgb-lib-android"
-                version = "0.3.0-beta.4"
+                version = "0.3.0-beta.5"
                 from(components["release"])
 
                 pom {

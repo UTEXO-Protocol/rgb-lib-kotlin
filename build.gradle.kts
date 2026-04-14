@@ -1,12 +1,22 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // provide classes now missing in JDK 21
+        classpath("com.sun.activation:javax.activation:1.2.0")
+    }
+}
+
 plugins {
     base
-    id("com.android.library") version "8.7.3" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.25" apply false
+    id("com.android.library") version "9.1.0" apply false
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
     id("org.jreleaser") version "1.19.0"
 }
 
 group = "com.utexo"
-version = "0.3.0-beta.4"
+version = "0.3.0-beta.5"
 
 allprojects {
     repositories {
@@ -24,7 +34,7 @@ jreleaser {
         authors.set(listOf("Zoe Faltibà", "Nicola Busanello"))
         license.set("MIT")
         licenseUrl.set("https://spdx.org/licenses/MIT.html")
-        copyright.set("2022-2025")
+        copyright.set("2022-2026")
 
         java {
             groupId.set("com.utexo")
