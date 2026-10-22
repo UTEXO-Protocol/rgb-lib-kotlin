@@ -52,6 +52,11 @@ val buildAndroidAarch64Binary by tasks.register<Exec>("buildAndroidAarch64Binary
         Pair("AR_aarch64_linux_android", "llvm-ar"),
         Pair("RANLIB_aarch64_linux_android", "llvm-ranlib"),
 
+        // bindgen uses libclang separately from CC and needs Android headers explicitly.
+        Pair("BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android",
+            "--target=aarch64-linux-android21 --sysroot=\"$llvmPath/sysroot\" " +
+                "-isystem \"$llvmPath/sysroot/usr/include/aarch64-linux-android\""),
+
         // support 16KB pages
         Pair("RUSTFLAGS", "-C link-arg=-Wl,-z,max-page-size=16384"),
     )
@@ -87,6 +92,11 @@ val buildAndroidX86_64Binary by tasks.register<Exec>("buildAndroidX86_64Binary")
         Pair("CXX_x86_64_linux_android", "x86_64-linux-android21-clang++"),
         Pair("AR_x86_64_linux_android", "llvm-ar"),
         Pair("RANLIB_x86_64_linux_android", "llvm-ranlib"),
+
+        // Keep these arguments target-specific so host UniFFI generation uses host headers.
+        Pair("BINDGEN_EXTRA_CLANG_ARGS_x86_64_linux_android",
+            "--target=x86_64-linux-android21 --sysroot=\"$llvmPath/sysroot\" " +
+                "-isystem \"$llvmPath/sysroot/usr/include/x86_64-linux-android\""),
 
         // support 16KB pages
         Pair("RUSTFLAGS", "-C link-arg=-Wl,-z,max-page-size=16384"),
