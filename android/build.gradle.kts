@@ -58,8 +58,8 @@ afterEvaluate {
         publications {
             create<MavenPublication>("maven") {
                 groupId = "com.utexo"
-                artifactId = "rgb-lib-android"
-                version = "0.3.0-beta.5"
+                artifactId = providers.gradleProperty("releaseArtifactId").getOrElse("rgb-lib-android")
+                version = rootProject.version.toString()
                 from(components["release"])
 
                 pom {
@@ -102,4 +102,3 @@ afterEvaluate {
         }
     }
 }
-
