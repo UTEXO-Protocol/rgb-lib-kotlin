@@ -14,15 +14,20 @@ val rgbLibUniffiPath = "${project.projectDir}/../rgb-lib/bindings/uniffi"
 val jniLibsDir = "$androidPath/src/main/jniLibs/"
 
 val androidNdkRoot = System.getenv("ANDROID_NDK_ROOT")
+    ?: "${System.getenv("ANDROID_SDK_ROOT")}/ndk-bundle"
+val llvmPath = "$androidNdkRoot/toolchains/llvm/prebuilt/$llvmArchPath"
 
-val cargoBuildCommonArgs: MutableList<String> = mutableListOf("build", "--release", "--target")
+val cargoBuildCommonArgs: MutableList<String> = mutableListOf("build", "--locked", "--release", "--target")
 
 val prepareBuild by tasks.register("prepareBuild") {
-    File(jniLibsDir).deleteRecursively()
+    doLast {
+        File(jniLibsDir).deleteRecursively()
+    }
 }
 
 // arm64-v8a is the most popular hardware architecture for Android
 val buildAndroidAarch64Binary by tasks.register<Exec>("buildAndroidAarch64Binary") {
+    dependsOn(prepareBuild)
 
     workingDir(rgbLibUniffiPath)
     val cargoArgs = cargoBuildCommonArgs + mutableListOf("aarch64-linux-android")
@@ -39,10 +44,11 @@ val buildAndroidAarch64Binary by tasks.register<Exec>("buildAndroidAarch64Binary
 
     environment(
         // add build toolchain to PATH
-        Pair("PATH", "${System.getenv("PATH")}:${System.getenv("ANDROID_NDK_ROOT")}/toolchains/llvm/prebuilt/$llvmArchPath/bin"),
+        Pair("PATH", "$llvmPath/bin:${System.getenv("PATH")}"),
 
         Pair("CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER", "aarch64-linux-android21-clang"),
-        Pair("CC", "aarch64-linux-android21-clang"),
+        Pair("CC_aarch64_linux_android", "aarch64-linux-android21-clang"),
+        Pair("CXX_aarch64_linux_android", "aarch64-linux-android21-clang++"),
         Pair("AR_aarch64_linux_android", "llvm-ar"),
         Pair("RANLIB_aarch64_linux_android", "llvm-ranlib"),
 
@@ -57,6 +63,7 @@ val buildAndroidAarch64Binary by tasks.register<Exec>("buildAndroidAarch64Binary
 
 // the x86_64 version of the library is mostly used by emulators
 val buildAndroidX86_64Binary by tasks.register<Exec>("buildAndroidX86_64Binary") {
+    dependsOn(buildAndroidAarch64Binary)
 
     workingDir(rgbLibUniffiPath)
     val cargoArgs = cargoBuildCommonArgs + mutableListOf("x86_64-linux-android")
@@ -73,10 +80,11 @@ val buildAndroidX86_64Binary by tasks.register<Exec>("buildAndroidX86_64Binary")
 
     environment(
         // add build toolchain to PATH
-        Pair("PATH", "${System.getenv("PATH")}:${System.getenv("ANDROID_NDK_ROOT")}/toolchains/llvm/prebuilt/$llvmArchPath/bin"),
+        Pair("PATH", "$llvmPath/bin:${System.getenv("PATH")}"),
 
         Pair("CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER", "x86_64-linux-android21-clang"),
-        Pair("CC", "x86_64-linux-android21-clang"),
+        Pair("CC_x86_64_linux_android", "x86_64-linux-android21-clang"),
+        Pair("CXX_x86_64_linux_android", "x86_64-linux-android21-clang++"),
         Pair("AR_x86_64_linux_android", "llvm-ar"),
         Pair("RANLIB_x86_64_linux_android", "llvm-ranlib"),
 
@@ -93,17 +101,18 @@ val buildAndroidX86_64Binary by tasks.register<Exec>("buildAndroidX86_64Binary")
 // to their place in the rgb-lib-android library
 // the task only copies the available binaries built using the buildAndroid<architecture>Binary tasks
 val moveNativeAndroidLibs by tasks.register<Copy>("moveNativeAndroidLibs") {
+    dependsOn(buildAndroidAarch64Binary, buildAndroidX86_64Binary)
 
     into(jniLibsDir)
 
     into("arm64-v8a") {
         from("$rgbLibUniffiPath/target/aarch64-linux-android/release/librgblibuniffi.so")
-        from("$androidNdkRoot/sources/cxx-stl/llvm-libc++/libs/arm64-v8a/libc++_shared.so")
+        from("$llvmPath/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so")
     }
 
     into("x86_64") {
         from("$rgbLibUniffiPath/target/x86_64-linux-android/release/librgblibuniffi.so")
-        from("$androidNdkRoot/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_shared.so")
+        from("$llvmPath/sysroot/usr/lib/x86_64-linux-android/libc++_shared.so")
     }
 
     doLast {
@@ -117,13 +126,17 @@ val generateAndroidBindings by tasks.register<Exec>("generateAndroidBindings") {
 
     workingDir(rgbLibUniffiPath)
     executable("cargo")
-    args("run", "--bin", "rgb-lib-uniffi-bindgen", "generate", "src/rgb-lib.udl",
+    args("run", "--locked", "--bin", "rgb-lib-uniffi-bindgen", "generate", "src/rgb-lib.udl",
         "--language", "kotlin", "--out-dir", "$androidPath/src/main/kotlin",
-        "--config", "uniffi.toml")
+        "--config", providers.gradleProperty("uniffiConfig").getOrElse("uniffi.toml"))
 
     doLast {
         println("Android bindings file successfully created")
     }
+}
+
+tasks.matching { it.name == "preBuild" || it.name.endsWith("SourcesJar") }.configureEach {
+    dependsOn(generateAndroidBindings)
 }
 
 // create an aggregate task which will run the required tasks to build the Android libs in order

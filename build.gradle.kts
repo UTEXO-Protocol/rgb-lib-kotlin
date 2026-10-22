@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "com.utexo"
-version = "0.3.0-beta.5"
+version = providers.gradleProperty("releaseVersion").getOrElse("0.3.0-beta.5")
 
 allprojects {
     repositories {
@@ -58,8 +58,10 @@ jreleaser {
 
         command {
             // set GPG key + passphrase to be used for signing, from Gradle properties
-            keyName.set(providers.gradleProperty("jreleaser.gpg.keyName"))
-            passphrase.set(providers.gradleProperty("jreleaser.gpg.passphrase"))
+            keyName.set(providers.environmentVariable("JRELEASER_GPG_KEY_NAME")
+                .orElse(providers.gradleProperty("jreleaser.gpg.keyName")))
+            passphrase.set(providers.environmentVariable("JRELEASER_GPG_PASSPHRASE")
+                .orElse(providers.gradleProperty("jreleaser.gpg.passphrase")))
         }
     }
 

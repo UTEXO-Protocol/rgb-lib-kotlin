@@ -1,0 +1,167 @@
+name: BFA Android Release
+
+on:
+  repository_dispatch:
+    types: [rgb-lib-bfa-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (e.g. 0.3.0-beta.7-bfa)'
+        required: true
+        type: string
+      source_sha:
+        description: 'Full 40-character rgb-lib-bfa commit SHA (same as iOS)'
+        required: true
+        type: string
+      publish:
+        description: 'Publish to Maven Central and public GitHub Releases'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bfa-android-${{ github.event.client_payload.version || inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      NDK_VERSION: '28.2.13676358'
+      ORG_GRADLE_PROJECT_releaseArtifactId: rgb-lib-bfa-android
+    outputs:
+      version: ${{ steps.input.outputs.version }}
+      source_sha: ${{ steps.input.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test release validation and packaging
+        run: python -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Validate release inputs
+        id: input
+        env:
+          VERSION_INPUT: ${{ github.event.client_payload.version || inputs.version }}
+          SOURCE_SHA_INPUT: ${{ github.event.client_payload.source_sha || inputs.source_sha }}
+        run: python scripts/bfa_release.py validate
+      - name: Checkout private BFA source
+        uses: actions/checkout@v4
+        with:
+          repository: UTEXO-Protocol/rgb-lib-bfa
+          ref: ${{ steps.input.outputs.source_sha }}
+          token: ${{ secrets.BFA_SOURCE_READ_TOKEN }}
+          path: rgb-lib
+          persist-credentials: false
+      - name: Verify source and set build parameters
+        env:
+          SOURCE_SHA: ${{ steps.input.outputs.source_sha }}
+          RELEASE_VERSION: ${{ steps.input.outputs.version }}
+        run: |
+          test "$(git -C rgb-lib rev-parse HEAD)" = "$SOURCE_SHA"
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
+          echo "SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_ENV"
+          echo "ORG_GRADLE_PROJECT_releaseVersion=$RELEASE_VERSION" >> "$GITHUB_ENV"
+          echo "ORG_GRADLE_PROJECT_uniffiConfig=$GITHUB_WORKSPACE/bfa-uniffi.toml" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+      - uses: android-actions/setup-android@v3
+      - name: Install Android and native build tools
+        run: |
+          sdkmanager "ndk;$NDK_VERSION" "platforms;android-36" "build-tools;36.0.0"
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+          sudo apt-get update
+          sudo apt-get install -y clang libclang-dev cmake pkg-config libssl-dev
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: '1.94.1'
+          target: aarch64-linux-android,x86_64-linux-android
+      - name: Record source metadata
+        run: python scripts/bfa_release.py metadata android android/src/main/assets/rgb-lib-bfa-version.json
+      - name: Build AAR and stage Maven package
+        run: ./gradlew --no-daemon :android:publish
+      - name: Verify and package release assets
+        run: |
+          python scripts/package_bfa.py
+          python scripts/bfa_release.py checksums release-assets
+          (cd release-assets && sha256sum --check SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bfa-android-${{ steps.input.outputs.version }}
+          path: |
+            release-assets/
+            android/build/staging-deploy/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    if: github.event_name == 'repository_dispatch' || inputs.publish
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      ORG_GRADLE_PROJECT_releaseVersion: ${{ needs.build.outputs.version }}
+      RELEASE_VERSION: ${{ needs.build.outputs.version }}
+      SOURCE_SHA: ${{ needs.build.outputs.source_sha }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require a public destination and an unused release version
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .private)" = false
+          python3 - <<'PY'
+          import json, os, urllib.request
+          url = f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/git/matching-refs/tags/bfa-v{os.environ['RELEASE_VERSION']}"
+          request = urllib.request.Request(url, headers={"Authorization": f"Bearer {os.environ['GH_TOKEN']}"})
+          refs = json.load(urllib.request.urlopen(request))
+          assert not any(ref['ref'] == f"refs/tags/bfa-v{os.environ['RELEASE_VERSION']}" for ref in refs), 'Release tag already exists; use a new version'
+          PY
+      - uses: actions/download-artifact@v4
+        with:
+          name: bfa-android-${{ needs.build.outputs.version }}
+          path: .
+      - name: Verify downloaded assets
+        run: (cd release-assets && sha256sum --check SHA256SUMS)
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+      - name: Import signing key
+        env:
+          GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
+        run: printf '%s' "$GPG_SECRET_KEY" | gpg --batch --import
+      - name: Publish staged package to Maven Central
+        env:
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.MAVENCENTRAL_USERNAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.MAVENCENTRAL_PASSWORD }}
+          JRELEASER_GITHUB_TOKEN: ${{ github.token }}
+          JRELEASER_GPG_KEY_NAME: ${{ secrets.GPG_KEY_NAME }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./gradlew --no-daemon jreleaserDeploy
+      - name: Publish downloadable AAR
+        env:
+          BINDINGS_SHA: ${{ github.sha }}
+        run: |
+          cat > release-notes.md <<EOF
+          Android bindings for rgb-lib-bfa, built from commit $SOURCE_SHA.
+          Maven Central: com.utexo:rgb-lib-bfa-android:$RELEASE_VERSION
+          Android API 21+, arm64-v8a and x86_64. See version.json and SHA256SUMS.
+          EOF
+          gh release create "bfa-v$RELEASE_VERSION" release-assets/* \
+            --target "$BINDINGS_SHA" --title "BFA Android $RELEASE_VERSION" \
+            --prerelease --notes-file release-notes.md
+      - name: Verify anonymous download
+        env:
+          GH_TOKEN: ''
+        run: |
+          curl --fail --location --retry 3 "https://github.com/$GITHUB_REPOSITORY/releases/download/bfa-v$RELEASE_VERSION/rgb-lib-bfa-android-$RELEASE_VERSION.aar" -o /tmp/public.aar
+          cmp /tmp/public.aar "release-assets/rgb-lib-bfa-android-$RELEASE_VERSION.aar"

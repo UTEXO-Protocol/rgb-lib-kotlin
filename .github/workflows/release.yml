@@ -60,10 +60,10 @@ jobs:
           target: aarch64-linux-android,x86_64-linux-android
 
       - name: Set version in build files
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          sed -i "s/version = \".*\"/version = \"$VERSION\"/" build.gradle.kts
-          sed -i "s/version = \".*\"/version = \"$VERSION\"/" android/build.gradle.kts
+          echo "ORG_GRADLE_PROJECT_releaseVersion=$RELEASE_VERSION" >> "$GITHUB_ENV"
 
       - name: Build Android library
         env:

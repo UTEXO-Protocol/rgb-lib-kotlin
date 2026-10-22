@@ -6,3 +6,6 @@
 /android/src/main/kotlin
 /cargo_cache
 /gradle_cache
+/release-assets
+/android/src/main/assets/rgb-lib-bfa-version.json
+**/__pycache__/

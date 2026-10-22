@@ -1,0 +1,3 @@
+[bindings.kotlin]
+package_name = "com.utexo"
+cdylib_name = "rgblibuniffi"

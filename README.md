@@ -151,3 +151,56 @@ Publish by running:
 [rgb-lib]: https://github.com/RGB-Tools/rgb-lib
 [rgb-lib-uniffi]: https://github.com/RGB-Tools/rgb-lib/tree/master/bindings/uniffi
 [OpenJDK 21]: (https://jdk.java.net/archive/)
+
+## BFA releases
+
+The separate `BFA Android Release` workflow builds **rgb-lib-bfa**, while the
+existing `Build and Release` workflow continues to publish ordinary rgb-lib.
+BFA uses `com.utexo:rgb-lib-bfa-android:<version>` and Kotlin package `com.utexo`.
+Do not include both rgb-lib variants in one application: their classes and native
+library names overlap.
+
+A source release `v0.3.0-beta.7` produces package version `0.3.0-beta.7-bfa`.
+Both mobile workflows must receive that version and the **same full source SHA**.
+The source checkout uses `BFA_SOURCE_READ_TOKEN` (read-only Contents access to
+`UTEXO-Protocol/rgb-lib-bfa`); no private Rust sources are uploaded.
+
+### Test and publish
+
+1. Merge the workflow into the repository's default branch so that GitHub can
+   receive `repository_dispatch` events. For a first test, select the feature
+   branch when running the workflow manually once GitHub has registered it.
+2. Set `BFA_SOURCE_READ_TOKEN`. Run `BFA Android Release` with `version`,
+   `source_sha`, and `publish=false` (the default). The Actions artifact contains
+   the AAR, Maven staging directory, `version.json`, and `SHA256SUMS`.
+3. Configure the existing Maven/GPG secrets: `MAVENCENTRAL_USERNAME`,
+   `MAVENCENTRAL_PASSWORD`, `GPG_SECRET_KEY`, `GPG_KEY_NAME`,
+   `GPG_PASSPHRASE`. The `com.utexo` namespace must be authorized in Central.
+4. Publish using the same version and SHA with `publish=true`, or enable the
+   dispatch integration in rgb-lib-bfa after **both** platform tests pass.
+
+Published assets are attached to tag `bfa-v<version>` in this **public** repository.
+Actions artifacts alone are temporary and are not the public distribution channel.
+The release AAR is checked byte-for-byte against the staged Maven AAR. It contains
+`arm64-v8a` and `x86_64` libraries, generated Kotlin code, and
+`assets/rgb-lib-bfa-version.json`. Minimum Android API: 21. The BFA build pins
+Rust 1.94.1 and NDK 28.2.13676358 and uses the committed Cargo lockfile.
+
+```groovy
+dependencies {
+    implementation 'com.utexo:rgb-lib-bfa-android:0.3.0-beta.7-bfa'
+}
+```
+
+The version above illustrates the naming convention; it is not a claim that the
+release already exists. For direct AAR integration, also provide the dependencies
+listed in the published Maven POM (including the Android JNA AAR).
+
+Download `SHA256SUMS`, `version.json`, and the AAR into one directory and run
+`sha256sum --check SHA256SUMS`. Compare `source_commit` with the iOS release's
+`version.json` before integrating both into rgb-sdk-rn.
+
+Publishing refuses an existing GitHub release tag. Maven Central versions are
+immutable. If Maven succeeds but GitHub publication fails, recover the GitHub
+release from the retained build artifact instead of attempting to replace the
+Maven version. A new source commit requires a new package version on both platforms.
