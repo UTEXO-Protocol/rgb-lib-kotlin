@@ -73,6 +73,8 @@ jobs:
           java-version: '21'
           distribution: temurin
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
       - name: Install Android and native build tools
         run: |
           sdkmanager "ndk;$NDK_VERSION" "platforms;android-36" "build-tools;36.0.0"
