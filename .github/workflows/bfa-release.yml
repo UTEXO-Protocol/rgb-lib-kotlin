@@ -157,6 +157,14 @@ jobs:
           Android bindings for rgb-lib-bfa, built from commit $SOURCE_SHA.
           Maven Central: com.utexo:rgb-lib-bfa-android:$RELEASE_VERSION
           Android API 21+, arm64-v8a and x86_64. See version.json and SHA256SUMS.
+
+          Migration from 0.3.0-beta.7-upstream-dev-bfa.2-bfa:
+          Kotlin bindings now use com.utexo instead of the accidentally shipped
+          uniffi.rgb_lib package. Update imports together with the dependency upgrade.
+          The native library name is corrected to rgblibuniffi; the
+          uniffi.component.rgb_lib.libraryOverride workaround is no longer needed.
+          The AAR no longer bundles libc++_shared.so, avoiding the React Native
+          duplicate-library conflict without requiring a pickFirsts workaround for this AAR.
           EOF
           gh release create "bfa-v$RELEASE_VERSION" release-assets/* \
             --target "$BINDINGS_SHA" --title "BFA Android $RELEASE_VERSION" \

@@ -1,3 +1,5 @@
-[bindings.kotlin]
+# UniFFI 0.32 --config uses global configuration. The rgb-lib-uniffi package
+# declares [lib].name = "rgblibuniffi", which is the crate key used by bindgen.
+[crates.rgblibuniffi.bindings.kotlin]
 package_name = "com.utexo"
 cdylib_name = "rgblibuniffi"
