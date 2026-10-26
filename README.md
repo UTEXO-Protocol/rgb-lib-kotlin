@@ -160,6 +160,19 @@ BFA uses `com.utexo:rgb-lib-bfa-android:<version>` and Kotlin package `com.utexo
 Do not include both rgb-lib variants in one application: their classes and native
 library names overlap.
 
+**Migration from `0.3.0-beta.7-upstream-dev-bfa.2-bfa`:** that release accidentally
+generated the package `uniffi.rgb_lib` because UniFFI 0.32 ignored the old config
+format. With the corrected release, change imports from `uniffi.rgb_lib` to
+`com.utexo` when upgrading. The bindings now load `rgblibuniffi` directly, so the
+`uniffi.component.rgb_lib.libraryOverride` workaround can be removed. The AAR
+does not bundle `libc++_shared.so`; React Native apps no longer need `pickFirsts`
+to resolve a duplicate introduced by this AAR.
+
+The release checks the generated Kotlin package and default library name, rejects
+stale package classes and bundled `libc++_shared.so`, and verifies both native ABIs.
+Publish this fix under a **new package version**; existing Maven versions cannot
+be replaced. Keep the Android and iOS source SHA identical.
+
 A source release `v0.3.0-beta.7` produces package version `0.3.0-beta.7-bfa`.
 Both mobile workflows must receive that version and the **same full source SHA**.
 The source checkout uses `BFA_SOURCE_READ_TOKEN` (read-only Contents access to

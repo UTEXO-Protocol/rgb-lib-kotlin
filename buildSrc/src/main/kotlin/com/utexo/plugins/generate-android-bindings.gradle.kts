@@ -22,6 +22,8 @@ val cargoBuildCommonArgs: MutableList<String> = mutableListOf("build", "--locked
 val prepareBuild by tasks.register("prepareBuild") {
     doLast {
         File(jniLibsDir).deleteRecursively()
+        // This directory contains only generated bindings. Remove old package paths too.
+        File("$androidPath/src/main/kotlin").deleteRecursively()
     }
 }
 
@@ -117,12 +119,10 @@ val moveNativeAndroidLibs by tasks.register<Copy>("moveNativeAndroidLibs") {
 
     into("arm64-v8a") {
         from("$rgbLibUniffiPath/target/aarch64-linux-android/release/librgblibuniffi.so")
-        from("$llvmPath/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so")
     }
 
     into("x86_64") {
         from("$rgbLibUniffiPath/target/x86_64-linux-android/release/librgblibuniffi.so")
-        from("$llvmPath/sysroot/usr/lib/x86_64-linux-android/libc++_shared.so")
     }
 
     doLast {
