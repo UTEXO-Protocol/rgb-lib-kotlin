@@ -175,8 +175,24 @@ be replaced. Keep the Android and iOS source SHA identical.
 
 A source release `v0.3.0-beta.7` produces package version `0.3.0-beta.7-bfa`.
 Both mobile workflows must receive that version and the **same full source SHA**.
-The source checkout uses `BFA_SOURCE_READ_TOKEN` (read-only Contents access to
-`UTEXO-Protocol/rgb-lib-bfa`); no private Rust sources are uploaded.
+The source checkout and Cargo builds use `BFA_SOURCE_READ_TOKEN` with read-only
+Contents access to `UTEXO-Protocol/rgb-lib-bfa` and all four private mirrors:
+`UTEXO-Protocol/rgb-consensus-s-bfa`, `UTEXO-Protocol/rgb-ops-s-bfa`,
+`UTEXO-Protocol/rgb-api-s-bfa`, and `UTEXO-Protocol/rgb-schemas-s-bfa`.
+Approve the token for the organization if required. No private Rust sources are uploaded.
+
+The build wrapper maps the pinned `ssh://git@github.com/rgb-tools-devs/*.git`
+sources to these four HTTPS mirrors. Credentials are scoped to these repositories
+and supplied only during dependency resolution and compilation, without storing
+the token in Git config or URLs.
+
+The preflight requires the root and standalone UniFFI workspace to agree on
+dependency patches and locked Git commits, then runs `cargo metadata --locked`
+to check access and resolution before compilation. It never rewrites the pinned
+source checkout or regenerates its lockfile. Source release `bfa.4` is incompatible
+because its UniFFI manifest omits the patches and its lockfile uses crates.io.
+Use a corrected source revision such as `v0.3.0-beta.7-upstream-dev-bfa.5`
+(`0a9d352f2690902df2b6fae9bca1a6c13c3354d4`) for **both** Android and iOS.
 
 ### Test and publish
 
